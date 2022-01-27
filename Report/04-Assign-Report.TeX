@@ -1,0 +1,408 @@
+\documentclass[12pt, a4paper]{article} % set document type and sizes
+
+%---------------------------------------------------------------------------------------------------------------------
+% Packages
+%---------------------------------------------------------------------------------------------------------------------
+
+% Useful Packages.
+
+\usepackage{amsmath} % prints mathematical formulas
+\usepackage{enumitem} % handles lists
+
+\usepackage{multirow} % handles merging cells in tables
+\usepackage{float} % adds [H] option to \begin{table}[H] to restrict floating.
+% to import tables from excel and csv use http://www.tablesgenerator.com/latex_tables
+
+\usepackage{cite} % Bibliography support 
+
+% For Greek characters support compile with XeLaTeX and include
+%\usepackage{xltxtra} % Greek support
+%\usepackage{xgreek} % Greek support
+%\setmainfont[Mapping=tex-text]{Garamond} % Font choice
+
+\usepackage{listings} % To insert formatted code
+\usepackage{color} % To color text
+\usepackage{wrapfig}
+\usepackage{graphicx}
+\usepackage{algpseudocode} % To insert algorithms (both needed)
+\usepackage{algorithm} % To insert algorithms (both needed)
+
+\usepackage[greek,english]{babel}
+\newcommand{\en}{\selectlanguage{english}}
+\newcommand{\el}{\selectlanguage{greek}}
+%---------------------------------------------------------------------------------------------------------------------
+% Code Format Settings
+%---------------------------------------------------------------------------------------------------------------------
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\lstset{frame=tb,
+  language=R,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{mauve},
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=3
+}
+
+%---------------------------------------------------------------------------------------------------------------------
+% Title Section
+%---------------------------------------------------------------------------------------------------------------------
+
+\newcommand{\horrule}[1]{\rule{\linewidth}{#1}} % command for creating lines to place the title in a box
+
+\title{	
+\normalfont \normalsize 
+\textsc{National and Kapodistrian University of Athens\\ Data Science Course} \\ [25pt] % University name and department
+\horrule{0.5pt} \\[0.4cm] % Top line
+\huge  04 - Assignment Machine Learning Algorithms with R \\ % The report title
+\horrule{2pt} \\[0.5cm] % Bottom line
+}
+
+\author{Tserpes Marios\\} % Author's name
+
+\date{\normalsize\today} % Today's date
+
+%---------------------------------------------------------------------------------------------------------------------
+% Main Document
+%---------------------------------------------------------------------------------------------------------------------
+
+
+\begin{document}
+\maketitle % print title
+\listoffigures
+%---------------------------------------------------------------------------------------------------------------------
+% Introduction
+%---------------------------------------------------------------------------------------------------------------------
+\newpage
+\section{Exercise 1}
+\subsection{Split the data set into a training set and a test set}
+\begin{lstlisting}
+set.seed(10)
+train_set <- sample(1 : nrow(Carseats), nrow(Carseats) / 2)
+carseats.train <- Carseats[train_set, ]
+carseats.test <- Carseats[-train_set, ]
+\end{lstlisting}
+\el 
+Όπως μπορούμε να δούμε από τον παραπάνω κώδικα, το σύνολο δεδομένων που αποτελείται από \textbf{400} παρατηρήσεις και \textbf{11} μεταβλητές, έχει χωριστεί, ισομερώς και με τυχαίο τρόπο, σε δύο υποσύνολα. Δηλαδή, \textbf{200} παρατηρήσεις έχουν εκχωρηθεί στο σύνολο δεδομένων προς εκπαίδευση καθώς και \textbf{200} παρατηρήσεις σε υποσύνολο όπου θα ελεγχθεί η μέθοδος ή μέθοδοι που θα εφαρμοστούν.
+
+\en 
+\subsection{ Fit a regression tree to the training set. Plot the tree and interpret the results. What train 
+and what test MSE do you obtain? Is there any indication for overfitting?}
+\subsubsection{Fit a regression tree to the training set. Plot the tree and interpret the results}
+\begin{lstlisting}
+reg.tree <- tree(Sales ~ ., data = carseats.train)
+summary(reg.tree)
+plot(reg.tree)
+text(reg.tree, pretty = 0)
+\end{lstlisting}
+\el 
+Από το \en \textbf{summary} \el μπορούμε να αντλήσουμε τις κατωτέρω πληροφορίες. Σε πρώτη φάση βλέπουμε ότι το δέντρο αξιοποιεί τις μεταβλητές:
+\en 
+\begin{itemize}
+    \item \textbf{Shelveloc}
+    \item \textbf{Price}
+    \item \textbf{Age}
+    \item \textbf{CompPrice}
+    \item \textbf{Advertising}
+    \item \textbf{US}
+\end{itemize}
+\el 
+ 
+\begin{figure}[H]
+                \centering
+                \includegraphics[scale=0.4]{PHOTO_1.jpg}
+                \caption{\el Οπτικοποίηση αρχικού δέντρου}
+                \end{figure}
+Επίσης, παρατηρούμε ότι το πλήθος των καταληκτικών κόμβων είναι \textbf{18}, ενώ οι πιο σημαντικές παράγοντες στην εκτίμηση της εξαρτημένης μεταβλητές αποτελούν η θέση που τα παιδικά καθίσματα διατίθενται στα ράφια καθώς και οι τιμή τους.  
+\newline
+Ένα από τα μεγαλύτερα πλεονεκτήματα των \textbf{Δέντρων Αποφάσεων} είναι ότι τα αποτελέσματα της μεθόδου είναι ερμηνεύσιμα και μπορούν να επικοινωνηθούν με ευκολία.
+\newline
+Όπως, λοιπόν, παρατηρούμε από την ανωτέρω οπτικοποίηση, η εν λόγω μέθοδος που στόχος της είναι να διαχωρίσει περιοχές στο χώρο μέσα στις οποίες εκχωρούνται παρατηρήσεις με τέτοιο τρόπο ώστε κάθε διαχωρισμός να είναι όσο πιο καθαρός γίνεται(\textbf{\en Minimum Impurity}) \el φαίνεται ότι χρησιμοποιεί τη μεταβλητή \textbf{\en Shelveloc} \el ως \textbf{\en ROOT NODE} \el και συγκεκριμένα το αν βρίσκονται τα προς πώληση καθίσματα σε κακή ή μέτρια(\en \textbf{Bad or Medium}) \el θέση στο κανάλι διανομής, δηλαδή τα ράφια. Επομένως:
+\begin{enumerate}
+    \item  \textbf{Εάν \en (Shelveloc = Bad or Medium) \& (Price $<$ 94.5) \& (Age $<$ 39.5) \el τότε $\approx$ 11.640}
+    \newline \el 
+    Αν η απάντηση είναι καταφατική, δηλαδή τα καθίσματα βρίσκονται σε κακής ή μέτριας ποιότητας θέσης στο ράφι και η τιμή που τα χρεώνει η εταιρεία  είναι χαμηλότερη των 94.5 μονάδω και η μέση ηλικία του τοπικού πληθυσμού είναι μικρότερη των 39.5 ετών, τότε εκτιμάται ότι οι πωλήσεις των καθισμάτων για καταστήματα που έχουν τα ανωτέρω χαρακτηριστικά θα είναι \textbf{11.640} παιδικά καθίσματα.
+\end{enumerate}
+
+
+\en 
+\begin{lstlisting}
+#For Test Subset
+yhat <- predict(reg.tree, newdata = carseats.test)
+mean((yhat - carseats.test$Sales)^2)
+#For Train Subset
+mean((predict(reg.tree, newdata = carseats.train) - carseats.train$Sales)^2)
+#R2 in test and train set
+library(caret)
+data.frame(R2.test.set  = R2(yhat, carseats.test$Sales),
+           R2.train.set = R2(predict(reg.tree, newdata = carseats.train), carseats.train$Sales))
+#RMSE in test and train set
+data.frame(RMSE.test.set  = RMSE(yhat, carseats.test$Sales),
+           RMSE.train.set = RMSE(predict(reg.tree, newdata = carseats.train), carseats.train$Sales))
+\end{lstlisting}
+\newline
+\el 
+Το \textbf{\en MSE} \el  που αφορά το υποσύνολο ελέγχου είναι \textbf{ 4.92}.
+\newline
+\el
+Το \textbf{\en MSE} \el  που αφορά το υποσύνολο εκπαίδευσης είναι \textbf{ 1.971}.
+\newline
+\el
+Το \textbf{\en R2} \el  που αφορά το υποσύνολο ελέγχου είναι \textbf{43\%}.
+\newline
+\el
+Το \textbf{\en R2} \el  που αφορά το υποσύνολο εκπαίδευσης είναι \textbf{75\%}.
+\newline
+Όπως, λοιπόν, παρατηρούμε η εν λόγω μέθοδος σε αρχικό στάδιο φαίνεται να εκτιμά καλύτερα το σύνολο δεδομένων εκπαίδευσης, ενώ όταν έρχεται η στιγμή να ελεγχθεί σε δεδομένα που δεν έχει δει, τότε η μέθοδος  αποτυγχάνει σε επίπεδο ακρίβειας καθώς εξηγεί λιγότερο από το 50 τοις εκατό της διακύμανσης και δεν γενικεύεται καλά.
+\newline
+Επομένως, η απάντηση στο αν υπάρχει ένδειξη για τον αν η μέθοδος υπεργενικεύεται στο υποσύνολο εκπαίδευσης, η απάντηση είναι ότι πράγματι υπάρχει ένδειξη \en Overfitting \el καθώς η απόσταση μεταξύ των υποσυνόλων είναι πολύ μεγάλη σε επίπεδο αξιολόγησης. Ωστόσο, η υπεργενίκευση σε πραγματικά προβλήματα δεν αποτελεί μεγάλο πρόβλημα καθώς ο στόχος μας είναι να πετύχουμε όσο το δυνατόν καλύτερη απόδοση στο υποσύνολο ελέγχου. Ωστόσο, λαμβάνοντας υπόψιν την έννοια της υπεγενίκευσης(\en \textbf{Overfitting}) \el η απάντηση είναι καταφατική και πράγματι φαίνεται να υπάρχει.
+\newline
+Καταληκτικά, ακόμα ένας λόγος που αναμέναμε εκ των προτέρων ότι η μέθοδος δε θα ανταποκρίνεται σωστά στα δεδομένα ελέγχου είναι ότι ένας φαινομενικά κακός διαχωρισμός στην αρχή θα μπορούσε να οδηγήσει σε ένα πολύ καλό διαχωρισμό κι ως εκ τούτου σε μια μεγάλη μείωση στο \en RSS \el ή το \en impurity index \el στη συνέχεια. Επομένως, χτίζουμε ένα δέντρο με το μέγιστο δυνατό βάθος που σημαίνει ότι στα δεδομένα εκπαίδευσης θα ανταποκρίνεται επαρκώς ενώ στα ελέγχου όχι και στη συνέχεια κλαδεύουμε το δέντρο με στόχο ένα μικρότερο δέντρο με λιγότερα \en splits \el να οδηγήσει σε μικρότερο \en variance \el και καλύτερη διερμήνευση. 
+
+
+\subsection{\en Use cross-validation in order to determine the optimal level of tree complexity. Does 
+pruning the tree improve the test MSE? What about train MSE?}
+\en 
+\begin{lstlisting}
+set.seed(20)
+cv.reg.tree <- cv.tree(reg.tree, FUN = prune.tree)
+summary(cv.reg.tree)
+names(cv.reg.tree)
+cv.reg.tree
+par(mfrow=c(1, 2))
+plot(cv.reg.tree$size, cv.reg.tree$dev, type = "b", col = "red")
+plot(cv.reg.tree$k, cv.reg.tree$dev, type = "b", col = "red")
+#Pruning the tree based on obtaining terminal nodes by using CV
+prune.carseats <- prune.tree(reg.tree, best = 8)
+plot(prune.carseats)
+text(prune.carseats, pretty = 0)
+yhat <- predict(prune.carseats, newdata = carseats.test)
+mean((yhat - carseats.test$Sales)^2)
+
+#MSE in train and test set
+data.frame(MSE.train.set = mean((predict(prune.carseats, newdata = carseats.train) - carseats.train$Sales)^2),
+           MSE.test.set  = mean((yhat - carseats.test$Sales)^2))
+\end{lstlisting}
+\el 
+Παρατηρώντας το παρακάτω διάγραμμα δεν είναι ξεκάθαρο για το ποιος είναι ο βέλτιστος αριθμός καταληκτικών κόμβων. Ωστόσο, μετά από πειραμτισμούς παρατηρήθηκε ότι μόνο όταν ο αριθμός των καταλητκικών κόμβων είναι 11 επέρχεται μείωση στο \en error \el στο υποσύνολο ελέγχου. Ωστόσο, η εν λόγω μείωση είναι εξαιρετικά ισχνή εώς και αμελητέα, δηλαδή ενώ με 18 καταληκτικούς κόμβους ήταν 4.92, με 11 βελτιώνεται σε 4.75.
+\newline
+Μάλιστα σε όλες τις άλλες περιπτώσεις όχι μόνο το εν λόγω μέγεθος παραμένει σταθερό αλλά μάλιστα σε κάποιες περιπτώσεις αυξάνεται. 
+\begin{figure}[H]
+                \centering
+                \includegraphics[scale=0.9]{cvtree10.jpg}
+                \caption{\el Βέλτιστος αριθμός καταληκτικών κόμβων - μεγέθους δέντρου}
+                \end{figure}
+\el                 
+Προφανώς όσο μειώνεται το \en complexity \el της μεθόδου είτε αυτό έχει να κάνει με τον αριθμό των καταληκτικών κόμβων είτε με άλλες υπερπαραμέτρους, αυτό που πετυχαίνουμε είναι να μειώσουμε το \en Overfitting \el καθώς το \en MSE \el στο υποσύνολο εκπαίδευσης αυξάνεται και σε συνδυασμό με μια ισχνή μείωση στο \el test \el τα μεγέθη στα 2 υποσύνολα έρχονται πιο κοντά. Επομένως, αυτό συμβαίνει και στην εν λόγω περίπτωση. Ωστόσο, ο στόχος δεν είναι να μειωθεί τόσο το \en complexity \el ώστε να έρθουν όσο πιο κοντά γίνεται τα 2 μεγέθη με ενδεχόμενη αύξηση στο \en test error.\el , αλλά να βελτιωθεί το εν λόγω σφάλμα. Επομένως, αν και το \en train error \el αυξήθηκε σε 2.80 μειώνοντας τον αριθμό των καταληκτικών κόμβων , πετύχαμε και ταυτόχρονη βελτίωση (ισχνή) στο \en test error \el  αν και η απόσταση στα 2 μεγέθη παραμένει αξιοσημείωτη.
+
+
+\subsection{\en Use the bagging approach in order to analyze this data. What train and what test MSE do 
+you obtain? Use the importance() function to determine which variables are most important. 
+}
+\en 
+\begin{lstlisting}
+set.seed(1)
+bag.carseats <-  randomForest(Sales~ . , data = Carseats, mtry = 10, 
+                              subset = train_set, importance = TRUE)
+bag.carseats
+yhat.bag <- predict(bag.carseats, newdata = Carseats[-train_set, ])
+mean((yhat.bag - carseats.test$Sales)^2)
+data.frame(MSE.train.set = mean((predict(bag.carseats, newdata = carseats.train) - carseats.train$Sales)^2),
+           MSE.test.set  = mean((yhat.bag - carseats.test$Sales)^2))
+data.frame(R2.train.set = R2(predict(bag.carseats, newdata = carseats.train), carseats.train$Sales),
+           R2.test.set  = R2(yhat.bag, carseats.test$Sales))
+importance(bag.carseats)
+varImpPlot(bag.carseats)
+\end{lstlisting}
+\el 
+Όπως ήταν αναμενόμενο η μέθοδος \en bootstrap \el που στην ουσία είναι αδύναμες μέθοδοι ετερογενείς ή ομοιογενείς και εν προκειμένω αξιοποιούν ασθενή σε απόδοση δέντρα αποφάσεων με στόχο να μειώσουν τη διακύμανση, δημιουργώντας τυχαία δείγματα από το σύνολο δεδομένων που οι επεξηγηματικές μεταβλητές σε κάθε δέντρο είναι οι ίδιες σε αριθμό. Εν προκειμένω, χτίσαμε 500 δέντρα με 10 επεξηγηματικές μεταβλητές.
+\newline
+Το \en error \el στο υποσύνολο ελέγχου βελτιώθηκε σε 2.60 ενώ στο υποσύνολο εκπαίδευσης είναι σχεδόν 0.5. Όπως παρατηρούμε, αν και η αξιολόγηση στα 2 υποσύνολα δημιουργεί υποψίες υπεργενίκευσης στο υποσύνολο εκπαίδευσης από την άλλη η βελτίωση της απόδοσης στο \en test \el υποσύνολο είναι εξαιρετικά υψηλή.
+
+\begin{figure}[H]
+                \centering
+                \includegraphics[scale=0.9]{importance.jpg}
+                \caption{\en Bagging: Feature Importance \el}
+                \end{figure}
+\el 
+Αν και οι μέθοδοι που αφορούν \en RandomForests \el είτε \el bagging \el προσεγγίσεις είναι δύσκολο να ερμηνευτούν λόγω του πλήθους των δέντρων - όπως εν προκειμένω - που χρησιμοποιούν, από την άλλη μπορούν να απόδώσουν ένα \en score \el για κάθε μεταβλητή, κατατάσσοντάς τη με βάση το πόσο χρήσιμη είναι στην εκτίμηση την μεταβλητής στόχου. Επομένως, μιλώντας για \en score \el στο συγκεκριμένο πρόβλημα είναι το \en RSS \el, ενώ η χρησιμότητα που γίνεται λόγος, αναφέρεται στο πόσο η παρουσία του εκάστοτε χαρακτηριστικού βελτιώνει το μέγεθος \en RSS,\el εφόσον το πρόβλημα είναι \en regression.\el
+\newline
+Όπως, λοιπόν, φαίνεται οι πιο σημαντικές μεταβλητές στην εκτίμηση πωλήσεων παιδικών καθισμάτων είναι οι:
+\begin{itemize}
+    \item \textbf{\en Price} \el που αφορά την τιμή που πουλά το εκάστοτε κατάστημα.
+    \item \textbf{\en Shelveloc} \el το μέρος που βρίσκεται το προϊόν στο κανάλι διανομής.
+    \item \textbf{\en CompPrice} \el που αφορά την τιμή που πουλά ο ανταγωνιστής.
+    \item \textbf{\en Age} \el ενώ αξιοσημείωτη είναι και η συνεισφορά της μέσης ηλικίας του τοπικού πληθυσμού που εδρεύει το κατάστημα.
+\end{itemize}
+\el 
+Επόμένως, όσο μεγαλύτερο είναι το \en score \el για το εκάστοτε χαρακτηριστικό τόσο μεγαλύτερη μείωση στο \en RSS \el συνεισφέρει η συμμετοχή της εν λόγω μεταβλητής.
+%---------------------------------------------------------------------------------------------------------------------
+% Section 1
+%---------------------------------------------------------------------------------------------------------------------
+
+\subsection{\en Use random forests to analyze this data. What train and what test MSE do you obtain? Use 
+the importance() function to determine which variables are most important. Describe the 
+effect of m, the number of variables considered at each split, on the error rate obtained. 
+}
+
+
+\section{\en Exercise 2}
+\textbf{\en Answer the following questions by making use of the OJ data set which is part of the ISLR R 
+package}
+\subsection{\en Create a training set containing a random sample of 800 observations, and a test set 
+containing the remaining observations.}
+\en
+\begin{lstlisting}
+set.seed(100)
+train = sample(nrow(OJ), 800)
+train.set = OJ[train, ]
+test.set = OJ[-train, ]
+\end{lstlisting}
+\el 
+Όπως παρατηρούμε, από το σύνολο των 1070 παρατηρήσεων, οι 800 εξ αυτών θα αξιοποιηθούν προκειμένου να εκπαιδευτεί η μέθοδος/οι που θα χρησιμοποιηθούν ενώ οι εναπομείνασες θα αξιοποιηθούν στη διαδικασία αξιολόγησης κι ελέγχου των μεθόδων. Οι παρατηρήσεις έχουν επιλεχθεί με τυχαίο τρόπο.
+\subsection{\en Fit a tree to the training data, with Purchase as the response and the other variables as 
+predictors. Use the summary() function to produce summary statistics about the tree, and 
+describe the results obtained. What is the training error rate? How many terminal nodes does 
+the tree have?}
+\en 
+\begin{lstlisting}
+tree.2 = tree(Purchase ~ ., data = train.set)
+summary(tree.2)
+\end{lstlisting}
+\el Από τα αποτελέσματα του \en summary(tree.2) \el παρατηρούμε ότι οι μεταβλητές που αξιοποιήθηκαν στην κατασκευή του δέντρου είναι οι:
+\begin{itemize}
+    \item \textbf{\en LoyalCH} \el που αφορά ένα μέγεθος σχετικά με την πιστότητα των πελατών που προτιμούν το χυμό \en Citrus Hill
+    \item \textbf{\en ListPriceDiff} \el που αφορά την προτεινόμενη τιμή του παραγωγού για το \en MM \el μείον την τιμή που προτείνει ο παραγωγός για τον \en CH.
+    \item \textbf{\en PriceDiff} \el που αφορά τη διαφορά της τιμής που προκύπτει από την πώληση του χυμού \en Minute Maid \el μείον της τιμής πώλησης του χυμού \en Citrus Hill.
+    \item \textbf{\en SalePriceMM} \el που αφορά την τιμή πώλησης για τη μάρκα \en MM.\el 
+\end{itemize}
+Επίσης, το δέντρο που δημιουργήθηκε αποτελείται από \textbf{8 καταληκτικούς κόμβους} ενώ το \textbf{\en Misclassification error rate} \el δηλαδή το πόσοστό των παρατηρήσεων  στο σύνολο εκπαίδευσης που εκχωρήθηκαν και εκτιμήθηκαν ότι ανήκουν σε διαφορετική κλάση από την \en actual \el είναι \textbf{15.58\%}, επομένως το \textbf{\en Accuracy} \el είναι \textbf{1-0.1558 = 84.42\%}.
+
+\subsection{\en Type in the name of the tree object in order to get a detailed text output. Pick one of the 
+terminal nodes, and interpret the information displayed. }
+\en
+\begin{lstlisting}
+tree.2
+\end{lstlisting}
+
+
+\begin{figure}[H]
+                \centering
+                \includegraphics[scale=0.9]{tree_2.jpg}
+                \caption{\el Άσκηση 2.\en c\el: Ρητά αποτελέσματα του δέντρου}
+                \end{figure} 
+\el 
+\textbf{Καταληκτικός κόμβος με την ένδειξη 11:}  Όπως βλέπουμε η μεταβλητή διαχωρισμού σε αυτό τον κόμβο είναι η \en PriceDiff.\el Η τιμή που γίνεται ο διαχωρισμός είναι 0.05 μονάδες. Στο υποδέντρο κάτω από αυτόν τον κόμβο υπάρχουν 107 παρατηρήσεις, ενώ η τυπική απόκλιση στην περιοχή αυτού του κόμβου είναι 144.90.Η συνολική εκτίμηση σχετικά με την αγορά είναι χυμός \en CH. \el Περίπου το 59 τοις εκατό των παρατηρήσεων σε αυτόν τον κόμβο εκτιμάται ότι έχουν την τιμή \en CH , \el ενώ για το 41.1 τοις εκατό εκτιμάται η τιμή \en MM.
+
+\subsection{\en Create a plot of the tree, and interpret the results.}
+\en 
+\begin{lstlisting}
+plot(tree.2)
+text(tree.2, pretty = 0)
+\end{lstlisting}
+\begin{figure}[H]
+                \centering
+                \includegraphics[scale=0.9]{plottree2.jpg}
+                \caption{\el Άσκηση 2.\en d\el: Όπτικοποίηση αρχικού δέντρου για το \en dataset OJ\el}
+                \end{figure}
+\el Όπως παρατηρούμε από το παραπάνω δέντρο ο πιο σημαντικός παράγοντας για την αγορά(\en Purchase) \el είναι η μεταβλητή \en LocalCH \el καθώς όπως φαίνεται το \en Roote Node \el διαφοροποιεί την ένταση της πιστότητας/αφοσίωσης των πελατών της μάρκας \en Citrus Hill.\el Επίσης, οι 3 κορυφαίοι κόμβοι περιέχουν τη μεταβλητή \en LocalCH \el.
+\newline
+Επομένως, ο βαθμός έντασης της αφοσίωσης στο προϊόν \en CH \el είναι πολύ σημαντικός παράγοντας. Αν ο βαθμός έντασης είναι μικρότερος από 0.28 το δέντρο εκτιμά \en MM.\el Ωστόσο, εάν ο βαθμός έντασης αφοσίωσης είναι στο διάστημ 0.50 έως 0.28 τότε σημαντικό ρόλο στην απόφαση διαδραματίζει η μεταβλητή που αφορά την διαφορά τιμής πώλησης για την \en CH \el από την \en MM, \el η οποία αν είναι μεγαλύτερη από 0.05 μονάδες τότε το δέντρο εκτιμά αγορά \en CH, \el ειδάλλως \en MM.\el Από εκεί και πέρα αν η ένταση της πιστότητας στο εν λόγω προϊόν είναι υψηλότερη από 0.76 τότε εκτιμάται αγορά χυμού \en CH.\el Ωστόσο, αν η ένταση αυτή είναι στο διάστημα 0.50 με 0.76 τότε σημαντικό ρόλο στην απόφαση διαδραματίζει η τιμή που προτείνει ο παραγωγός και και η τιμή πώλησης του χυμού \en MM.\el 
+
+\subsection{\en Predict the response on the test data, and produce a confusion matrix comparing the test 
+labels to the predicted test labels. What is the test error rate? Repeat the same for the train 
+data set, as well}
+\en 
+\begin{lstlisting}
+#TEST SET
+tree.pred <- predict(tree.2, test.set, type = "class")
+table(tree.pred, test.set$Purchase)
+1 - (142 + 69) / nrow(test.set)
+#TRAIN SET
+tree.pred2 <- predict(tree.2, train.set, type = "class")
+table(tree.pred2, train.set$Purchase)
+1 - (421 + 237) / nrow(train.set)
+\end{lstlisting}
+\el
+Από τις παραπάνω εντολές παρατηρούμε ότι το \en test error rate \el είναι 21.85\% ενώ το \en train error rate \el είναι 15.88\%. Μάλιστα, όπως φαίνεται από το \en confusion matrix \el στο \en test \el υποσύνολο από τις 178 παρατηρήσεις που ανήκουν στην κατηγορία \en CH \el οι 142 έχουν εκτιμηθεί ως \en CH \el ενώ οι υπόλοιπες 36 ως \en MM.\el
+\newline
+Επίσης, όπως φαίνεται η ακρίβεια τόσο στο \en train \el είναι περίπου 85 τοις εκατό ενώ στο \en test \el είναι περίπου 80 τοις εκατό.
+
+\subsection{\en Apply the cv.tree() function to the training set in order to determine the optimal tree size.}
+\en 
+\begin{lstlisting}
+set.seed(10)
+cv.OJ = cv.tree(tree.2)
+\end{lstlisting}
+
+\subsection{\en  Produce a plot with tree size on the x-axis and cross-validated classification error rate on 
+the y-axis.}
+\en 
+\begin{lstlisting}
+set.seed(10)
+cv.oj <- cv.tree(tree.2, FUN = prune.misclass)
+cv.oj
+\end{lstlisting}
+\subsection{\en Produce a plot with tree size on the x-axis and cross-validated classification error rate on the y-axis.}
+\en 
+\begin{lstlisting}
+plot(cv.oj$size, cv.oj$dev, type = "b", xlab = "size", ylab = "Deviance", col = "red")
+\end{lstlisting}
+\begin{figure}[H]
+                \centering
+                \includegraphics[scale=0.9]{x.jpg}
+                \caption{\el Άσκηση 2.\en g\el: Μέγεθος δέντρου και \en error rate \el για το \en dataset OJ\el}
+                \end{figure}
+\subsection{\en Which tree size corresponds to the lowest cross-validated classification error rate?} 
+\el 
+Οπτικά σε πρώτη φάση το διάγραμμα, μας δείχνει ότι το χαμηλότερο \en classification error rate \el οδηγεί στην επιλογή 5 ή 6 ή 7 καταληκτικών κόμβων.
+\newline
+Ωστόσο, επειδή η επιλογή των καταληκτικών κόμβων δεν είναι ξεκάθαρη, θα υλοποιηθεί η μέθοδος κλαδεύοντας το δέντρο από 8 καταληκτικούς κόμβους σε 5 και σε 6 οι οποίοι αποδίδουν το ίδιο \en error rate \el δηλαδή 15.88\%.
+
+\subsection{\en Produce a pruned tree corresponding to the optimal tree size obtained using cross-validation. If cross-validation does not lead to selection of a pruned tree, then create a pruned 
+tree with five terminal nodes.}
+\en 
+\begin{lstlisting}
+prune.oj <- prune.misclass(tree.2, best = 6)
+plot(prune.oj)
+text(prune.oj, pretty = 0)
+\end{lstlisting}
+\begin{figure}[H]
+                \centering
+                \includegraphics[scale=0.9]{pt.jpg}
+                \caption{\el Άσκηση \en i: \el Οπτικοποίηση δέντρου με 6 καταληκτικούς κόμβους για το \en dataset OJ\el}
+                \end{figure}
+\subsection{\en Compare the training error rates between the pruned and unpruned trees. Which is higher? 
+Explain!}
+\en 
+\begin{lstlisting}
+summary(tree.2)
+summary(prune.oj)
+\end{lstlisting}
+\el
+Πειραματιζόμενος με διαφορετικές τιμές σχετικά με το πλήθος των καταληκτικών κόμβων, κατέληξα στο ότι το  κλάδεμα το δέντρου δεν επιφέρει κάποια ισχυρή αύξηση ή μείωση στο \en classification error rate.\el Ωστόσο, μειώνοντας το μέγεθος των καταληκτικών κόμβων, πλέον το δέντρο έχει γίνει ευκολότερα ερμηνεύσιμο, χωρίς να διαφοροποιείται ως προς τα αποτελέσματα που παράγει.
+\newline
+Συγκεκριμένα, τόσο στο δέντρο με τους 5 αλλά και με τους 6 καταληκτικούς κόμβους η αλλά και στο αρχικό δέντρο, το λάθος ποσοτικοποιείται στο 15.58\%. 
+
+\subsection{\en Compare the test error rates between the pruned and unpruned trees. Which is higher? 
+Explain!}
+\en 
+\begin{lstlisting}
+pred.unpruned <-  predict(tree.2, test.set, type="class")
+misclass.unpruned <-  sum(test.set$Purchase != pred.unpruned)
+misclass.unpruned / length(pred.unpruned)
+\end{lstlisting}
+\el 
+Όπως παρατηρούμε το \en error rate \el και στις 2 περιπτώσεις , τόσο κλαδεύοντας το δέντρο όσο και με το αρχικό το \en error \el είναι 21.85 τοις εκατό.
+\end{document}
