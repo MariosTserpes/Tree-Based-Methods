@@ -93,17 +93,38 @@ varImpPlot(bag.carseats)
 #the importance() function to determine which variables are most important. Describe the 
 #effect of m, the number of variables considered at each split, on the error rate obtained. 
 set.seed(20)
-rf4.carseats <- randomForest(Sales ~ ., data = Carseats, mtry = 4, subset = train_set, importance = TRUE)
-rf3.carseats <- randomForest(Sales ~ ., data = Carseats, mtry = 3, subset = train_set, importance = TRUE)
-rf4.carseats
-rf3.carseats
-yhat4.rf <- predict(rf4.carseats, newdata = Carseats[-train_set, ])
-yhat3.rf <- predict(rf3.carseats, newdata = Carseats[-train_set, ])
-mean((yhat4.rf - carseats.test$Sales)^2)
-mean((yhat3.rf - carseats.test$Sales)^2)
-par(mfrow=c(2,2))
-varImpPlot(rf5.carseats)
-varImpPlot(rf3.carseats)
+#Parameter tuning of Number of variables at each split
+MSE.rf <- NA 
+for (a in 1 : 10){
+  RandomForest <- randomForest(Sales ~ ., data = carseats.train, mtry = a,
+                               ntree = 500, importance = TRUE)
+  RandomForest.pred <- predict(RandomForest, carseats.test)
+  MSE.rf[a] <- mean((RandomForest.pred - carseats.test$Sales)^2)
+  }
+min(MSE.rf) #refers in 9 variables on each tree
+
+#Tuning Number of Trees
+set.seed(20)
+MSE.rf2 <- NA 
+for (ntree in c(20, 25, 50, 100, 150, 200)){
+  RandomForest2 <- randomForest(Sales ~ ., data = carseats.train, mtry = 9,
+                               ntree = ntree, importance = TRUE)
+  RandomForest2.pred <- predict(RandomForest2, carseats.test)
+  MSE.rf2[ntree] <- mean((RandomForest2.pred - carseats.test$Sales)^2)
+}
+
+set.seed(20)
+RandomForest3 <- randomForest(Sales ~ ., data = carseats.train, mtry = 9,
+                              ntree = 50, importance = TRUE)
+
+RandomForest3
+yhat.rf <- predict(RandomForest3, newdata = carseats.test)
+#Test Error
+mean((yhat.rf - carseats.test$Sales)^2)
+#Train Error
+mean((predict(RandomForest3, newdata = carseats.train) - carseats.train$Sales)^2)
+
+importance(RandomForest3)
 
 
 
